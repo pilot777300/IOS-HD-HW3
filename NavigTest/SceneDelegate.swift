@@ -6,7 +6,10 @@
 //
 
 import UIKit
-import FirebaseCore
+
+import Firebase
+
+
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -14,6 +17,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   
     
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+       
+        FirebaseApp.configure()
         
         let factory = MyLoginFactory()
               let loginInspector = factory.makeLoginInspector()
@@ -24,7 +29,26 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window = UIWindow(windowScene: windowScene)
         self.window?.rootViewController =  createTabBarController()
         self.window?.makeKeyAndVisible()
-        FirebaseApp.configure()
+        Firebase.Auth.auth().addStateDidChangeListener { auth, user in
+     
+            if user == nil {
+             //  print("USER NOT FOUND")
+              //  self.showAuthController()
+            }
+        }
+    }
+    
+    func showAuthController(){
+        print("NO USER")
+        let alert = UIAlertController(title: "Пользователь не найден!", message: "Зарегистрируйтесь", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "ОК", style: .cancel, handler: nil))
+        self.window?.rootViewController?.present(alert, animated: true)
+        let lvc = LogInViewController()
+//       lvc.signUp = false
+ 
+        
+       // let newVC = LogInViewController()
+        //self.window?.rootViewController?.navigationController?.pushViewController(newVC, animated: false)
     }
     
     func createFeedViewController() -> UINavigationController {
@@ -51,10 +75,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     
     
     func sceneDidDisconnect(_ scene: UIScene) {
-        // Called as the scene is being released by the system.
-        // This occurs shortly after the scene enters the background, or when its session is discarded.
-        // Release any resources associated with this scene that can be re-created the next time the scene connects.
-        // The scene may re-connect later, as its session was not necessarily discarded (see `application:didDiscardSceneSessions` instead).
+        do {
+            try  Auth.auth().signOut()
+        }catch {
+            print(error.localizedDescription)
+        }
+        
+       
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {

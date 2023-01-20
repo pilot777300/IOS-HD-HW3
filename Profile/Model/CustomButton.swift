@@ -15,7 +15,7 @@ class CustomButton: UIButton {
     typealias Action = () -> Void
     var buttonAction: Action
     
-    init(buttonTitle: String , buttonColor: UIColor, titleColor: UIColor = .white, action: @escaping Action) {
+    init(buttonTitle: String, buttonColor: UIColor, titleColor: UIColor = .systemBlue, action: @escaping Action) {
         buttonAction = action
         self.buttonTitle = buttonTitle
         self.buttonColor = buttonColor
@@ -24,9 +24,9 @@ class CustomButton: UIButton {
         clipsToBounds = true
         backgroundColor = buttonColor
         setTitleColor(titleColor, for: .normal)
-        layer.cornerRadius = 10
+      //  layer.cornerRadius = 10
         setTitle(buttonTitle, for: .normal)
-        titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+        titleLabel?.font = UIFont.systemFont(ofSize: 13)
         layer.masksToBounds = false
         translatesAutoresizingMaskIntoConstraints = false
         addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)

@@ -6,75 +6,50 @@
 //
 
 import UIKit
+import Firebase
 
 class LogInViewController: UIViewController {
     
-   
-     private lazy var loginButton: CustomButton = {
-        let button = CustomButton(buttonTitle: "CUSTOM BUTTON" , buttonColor: .red) { [self] in
+    var signUp: Bool = true {
+        willSet {
+            if newValue {
+                registrationTxt.text = "Регистрация"
+            } else {
+                registrationTxt.text = "Вход"
+                email.placeholder = "Введите корректный e-mail"
+                password.placeholder = "Введите пароль"
+            }
+        }
+    }
+     
+    private lazy var loginButton: CustomButton = {
+        let button = CustomButton(buttonTitle: "Войти" , buttonColor: .white) { [self] in
             loginButtonPressed()
         }
        return button
     }()
-    
-
-    private lazy var logo = UIImageView()
-  lazy var email = UITextField()
-  lazy var password = UITextField()
  
-    
     var loginDelegate: LoginViewControllerDelegate = LoginInspector()
   
-
     override func viewDidLoad() {
         super.viewDidLoad()
-     
+        email.delegate = self
+        password.delegate = self
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(sender:)), name: UIResponder.keyboardWillShowNotification, object: nil);
 
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(sender:)), name: UIResponder.keyboardWillHideNotification, object: nil);
        
-        
         navigationController?.isNavigationBarHidden = true
         view.backgroundColor = .white
-        
-        logo.backgroundColor = .white
-        logo.image = UIImage(named: "logo")
-        logo.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(logo)
-        
-        email.layer.borderWidth = 0.5
-        email.layer.borderColor = UIColor.lightGray.cgColor
-        email.placeholder = "e-mail"
-        email.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
-        email.backgroundColor = .systemGray6
-        email.font = UIFont.systemFont(ofSize: 15)
-        email.translatesAutoresizingMaskIntoConstraints = false
-        email.clipsToBounds = true
-        email.layer.cornerRadius = 10
-        email.layer.maskedCorners = [.layerMinXMinYCorner, .layerMaxXMinYCorner]
-        email.keyboardType = UIKeyboardType.default
-        email.clearButtonMode = UITextField.ViewMode.whileEditing
-        email.returnKeyType = UIReturnKeyType.done
-        email.resignFirstResponder()
+
+        self.view.addSubview(logo)
         self.view.addSubview(email)
-        
-        password.layer.borderWidth = 0.5
-        password.layer.borderColor = UIColor.lightGray.cgColor
-        password.contentVerticalAlignment = UIControl.ContentVerticalAlignment.center
-        password.placeholder = "Password"
-        password.font = UIFont.systemFont(ofSize: 15)
-        password.backgroundColor = .systemGray6
-        password.keyboardType = UIKeyboardType.default
-        password.translatesAutoresizingMaskIntoConstraints = false
-        password.clipsToBounds = true
-        password.layer.cornerRadius = 10
-        password.layer.maskedCorners = [.layerMaxXMaxYCorner, .layerMinXMaxYCorner]
-        password.isSecureTextEntry = true
         self.view.addSubview(password)
         self.view.addSubview(loginButton)
+        self.view.addSubview(registrationTxt)
+        self.view.addSubview(alredRegisteredTxt)
         constraints()
-
-    }
+            }
    
     @objc func keyboardWillShow(sender: NSNotification) {
          self.view.frame.origin.y = -90 
@@ -89,22 +64,11 @@ class LogInViewController: UIViewController {
     }
    
      func loginButtonPressed() {
-       
-        let profileViewController = ProfileViewController()
-        if  loginDelegate.check(login: email.text!, password: password.text!) == true
-                              {
-             self.navigationController?.pushViewController(profileViewController, animated: true)
-        } else {
-
-            let alert = UIAlertController(title: "Ошибка",
-                                        message: "Неправильный логин или пароль",
-                                        preferredStyle: .alert)
-                                alert.addAction(UIAlertAction(title: "Попробую снова", style: .cancel, handler: nil))
-                                    self.present(alert, animated: true)
-                                    }
-
-
-    }
+         signUp = !signUp
+         alredRegisteredTxt.isHidden = true
+         loginButton.setTitle("Зарегистрироваться", for: .normal)
+                }
+    
     private func constraints() {
         let safeArea = view.safeAreaLayoutGuide
      NSLayoutConstraint.activate([
@@ -112,6 +76,12 @@ class LogInViewController: UIViewController {
        logo.widthAnchor.constraint(equalToConstant: 100),
        logo.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 120.0),
        logo.heightAnchor.constraint(equalToConstant: 100),
+        
+        registrationTxt.centerXAnchor.constraint(equalTo: safeArea.centerXAnchor),
+        registrationTxt.bottomAnchor.constraint(equalTo: logo.bottomAnchor, constant: 100),
+        registrationTxt.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
+        registrationTxt.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
+        registrationTxt.heightAnchor.constraint(equalToConstant: 50),
         
         email.centerXAnchor.constraint(equalTo: safeArea.centerXAnchor),
         email.topAnchor.constraint(equalTo: logo.bottomAnchor, constant: 120),
@@ -124,18 +94,80 @@ class LogInViewController: UIViewController {
         password.heightAnchor.constraint(equalToConstant: 50),
         password.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
         password.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
-      
-        loginButton.topAnchor.constraint(equalTo: password.bottomAnchor, constant: 16),
+
+        alredRegisteredTxt.centerXAnchor.constraint(equalTo: safeArea.centerXAnchor),
+        alredRegisteredTxt.topAnchor.constraint(equalTo: password.bottomAnchor, constant: 10),
+        alredRegisteredTxt.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
+        alredRegisteredTxt.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
+        
+        loginButton.topAnchor.constraint(equalTo: alredRegisteredTxt.bottomAnchor, constant: 5),
         loginButton.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
         loginButton.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
         loginButton.heightAnchor.constraint(equalToConstant: 50),
-
-     ])
-    
+        ])
     }
-  
+    
+    func showAlert() {
+        let alert = UIAlertController(title: nil, message: "Заполните все поля", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: nil))
+        present(alert, animated: true, completion: nil)
+        }
+    }
+
+extension LogInViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        let email = email.text!
+        let password = password.text!
+        if signUp { // если нажата "Регистрация"
+            if (!email.isEmpty && !password.isEmpty) { // если поля не пустые
+                Auth.auth().createUser(withEmail: email, password: password) { result, error in //создаем нового юзера
+                    if error == nil {
+                        if let result = result {
+                            print(result.user.uid)
+                            let ref = Database.database(url: "https://authorization-ef0cc-default-rtdb.europe-west1.firebasedatabase.app/").reference().child("users")
+                            ref.child(result.user.uid).updateChildValues(["email":email]) // добавляем емейл юзера в базу
+                        let profileViewController = ProfileViewController()  // и переходим на ProfieViewController
+                            self.navigationController?.pushViewController(profileViewController, animated: true)
+                            self.showAlertSuccessRegistered()
+                        }
+                    }
+                }
+            } else {
+                showAlert()
+            }
+        } else { // если нажата "Вход"
+                if  (!email.isEmpty && !password.isEmpty) { // и все поля заполнены
+
+                    Auth.auth().signIn(withEmail: email, password: password) { success, error in // проверяем зарегистрирован ли пользователь
+                        
+                        if (success != nil) { // если зарегистрирован
+
+                                let profileViewController = ProfileViewController() // переходим на контоллер
+                                   self.navigationController?.pushViewController(profileViewController, animated: true)
+
+                        } else {
+                            self.showAlertNotRegisteredUser() // если нет, то показываем алерт 
+                        }
+                    }
+                } else {
+                    showAlert()
+                }
+            }
+        return true
+    }
+    
+    func showAlertNotRegisteredUser () {
+        let alert = UIAlertController(title: "Пользователь не найден", message: "Проверьте правильность введенных данных", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    
+    func showAlertSuccessRegistered() {
+        let alert = UIAlertController(title: nil, message: "Вы успешно зарегистрированы", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
+    
 }
-
-
 
 
